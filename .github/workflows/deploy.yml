@@ -1,6 +1,4 @@
-# @see https://v2.vuepress.vuejs.org/zh/guide/deployment.html#github-pages
-
-name: deploy example
+name: Publish Docs Deploy
 
 on:
   # 每当 push 到 main 分支时触发部署
@@ -11,22 +9,24 @@ on:
   workflow_dispatch:
 
 jobs:
-  docs:
+  deploy-docs:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'release' }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
 
-      - name: Install pnpm
+      - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
-      - name: Install Node.js
+      - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version-file: '22.x'
-          registry-url: 'https://registry.npmjs.org'
-          cache: 'pnpm'
+          node-version: 22
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -45,7 +45,10 @@ jobs:
         run: pnpm i --frozen-lockfile
 
       - name: Build
-        run: pnpm run build
+        run: pnpm build
+        env:
+          DOC_ENV: production
+          NODE_OPTIONS: --max-old-space-size=4096
 
       # 查看 workflow 的文档来获取更多信息
       # @see https://github.com/crazy-max/ghaction-github-pages
