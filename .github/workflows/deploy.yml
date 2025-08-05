@@ -1,4 +1,4 @@
-name: Publish Docs Deploy
+name: Publish Deploy
 
 on:
   # 每当 push 到 main 分支时触发部署
@@ -18,6 +18,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
       - name: Setup node
         uses: actions/setup-node@v4
